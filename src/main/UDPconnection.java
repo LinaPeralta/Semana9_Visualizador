@@ -7,9 +7,25 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
+import com.google.gson.Gson;
+
+import events.IObserver;
+import model.Dato;
+
 public class UDPconnection extends Thread {
 	
 	private DatagramSocket socket;
+	Gson gson;
+	private Dato dato;
+	private IObserver observer;
+	
+//	public void setObserver(IObserver observer) {
+//		this.observer = observer;
+//	}
+	
+	public UDPconnection(IObserver observer) {
+		this.observer = observer;
+	}
 	
 	public void run() {
 		
@@ -18,24 +34,11 @@ public class UDPconnection extends Thread {
 			
 			socket = new DatagramSocket(5000);
 			
-			while(true) {
-				
-				byte [] buffer = new byte[100];
-				DatagramPacket packet = new DatagramPacket(buffer,buffer.length);
-				System.out.println("Esperando datagrama");
-				socket.receive(packet);
-				
-				
-				String mensaje = new String(packet.getData()).trim();
-						
-				System.out.println("Esperando recibido"+ mensaje);
-			}
+			recibir();
 			
 			
-			
-		} catch (SocketException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+				
+
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -46,24 +49,57 @@ public class UDPconnection extends Thread {
 	
 	public void sendMessage(String mensaje) {
 		
-		InetAddress IP;
-		try {
-			
-			IP = InetAddress.getByName("127.0.2.2");
-			DatagramPacket packet = new DatagramPacket(mensaje.getBytes(), mensaje.getBytes().length,IP,6000);
-			socket.send(packet);
+		new Thread(()->{
 			
 			
-		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			try {
+				InetAddress IP;
+				
+				IP = InetAddress.getByName("192.168.0.121");
+				DatagramPacket packet = new DatagramPacket(mensaje.getBytes(), mensaje.getBytes().length,IP,9000);
+				socket.send(packet);
+			
+				
+				
+			} catch (UnknownHostException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+			
+		}).start();
+
+		
+	}
+	
+
+	private void recibir(){
+		while(true) {
+			
+			byte [] buffer = new byte[100];
+			DatagramPacket packet = new DatagramPacket(buffer,buffer.length);
+			//System.out.println("Esperando datagrama");
+			
+			
+			try {
+			socket.receive(packet);
+			
+			String mensaje = new String(packet.getData()).trim();
+		    
+			
+			//datos = gson.fromJson(mensaje, Dato.class);
+			
+			System.out.println("Pedido: "+ mensaje);
+			observer.recibirMensaje(mensaje);
+			
+			}catch(Exception e) {
+				e.printStackTrace();
+			}
+			
 		}
-		
-		
-		
 		
 	}
 
