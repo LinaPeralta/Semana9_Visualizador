@@ -2,7 +2,7 @@ package model;
 
 public class Dato {
 
-	String orden;
+	String orden,num;
 
 
     public Dato() {
@@ -18,5 +18,13 @@ public class Dato {
 
     public void setOrden(String orden) {
         this.orden = orden;
+    }
+    
+    public String getNum() {
+        return num;
+    }
+
+    public void setNum(String num) {
+        this.num = num;
     }
 }
